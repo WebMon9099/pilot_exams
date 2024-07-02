@@ -1,0 +1,43 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.examination-content{
+    font-size: 1.3rem!important;
+    color: #34424c!important;
+    padding-bottom: 30px!important;
+}
+.image-exam-content{
+    img{
+        border: 1px solid #ddd;
+        box-shadow: 0px 2px 4px #eee;
+        max-width: 95%;
+        max-height: 500px;
+    }
+}
+.question-text {
+    color: #34424c!important;
+    font-Weight: 600!important;
+    font-Size: 1.4rem!important;
+}
+.multi-choice-vertical {
+    button{
+        padding: 20px;
+        border: 1px Solid #e1e1e1;
+    }
+}
+.horizontal-answer {
+    button{
+        border: 1px Solid #e1e1e1
+    }
+}
+.font-small-answer {
+    button{
+        font-size:1.05em;
+    }
+}
+.max-content-height{
+    height:max-content;
+    min-height:100%;
+}
+
