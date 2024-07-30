@@ -558,7 +558,7 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
           {customContent}
         </div>
         <div
-          className={"examination-content text-center text-lg font-semibold text-theme-dark-gray md:text-small-title [&>img]:mb-16 [&>img]:max-h-[50vh]" 
+          className={"examination-content text-center text-lg text-theme-dark-gray md:text-small-title [&>img]:mb-16 [&>img]:max-h-[50vh]" 
             + ((exam?.add_styling_to_images || (exam.template_type === 'side-by-side-medium' && currentQuestion?.add_styling_to_images))? " image-exam-content": "")}
           dangerouslySetInnerHTML={{ __html: currentQuestion?.body || "" }}
         ></div>

@@ -7,6 +7,9 @@
     color: #34424c!important;
     padding-bottom: 30px!important;
 }
+.examination-content b{
+    font-weight: 600;
+}
 .image-exam-content{
     img{
         border: 1px solid #ddd;
@@ -17,8 +20,11 @@
 }
 .question-text {
     color: #34424c!important;
-    font-Weight: 600!important;
+    // font-Weight: 600!important;
     font-Size: 1.4rem!important;
+}
+.question-text b{
+    font-Weight: 600!important;
 }
 .multi-choice-vertical {
     button{

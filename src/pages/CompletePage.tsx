@@ -53,7 +53,7 @@ const CompletePage: React.FC<{
   useEffect(() => {
     if (!exam) return;
 
-    if (mode !== "customization" && exam.id !== "custom") {
+    if (exam.id !== "custom") {
       insertResult({
         score,
         duration: time,
