@@ -7,3 +7,4 @@ export { default as Slider } from './Slider';
 export { Slide, default as Slideshow } from './Slideshow';
 export { default as SwitchButton } from './SwitchButton';
 export { default as ToggleButton } from './ToggleButton';
+export { default as ProgressCircle } from './ProgressCircle';

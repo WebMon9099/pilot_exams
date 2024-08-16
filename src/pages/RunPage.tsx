@@ -11,6 +11,7 @@ import {
   QuestionMap,
   TabsContent,
   TrainingModeModal,
+  ProgressCircle,
 } from "../components";
 import {
   ClockEvent,
@@ -59,6 +60,10 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
   const [questions, setQuestions, questionsRef] = useRefState<
     (Question & { selectedAnswerId?: string })[]
   >([]);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [audioProgress, setAudioProgress] = useState(0);
 
   const [, setCategory, categoryRef] = useRefState<Category | undefined>(
     undefined
@@ -181,10 +186,19 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
       const newCategory = allCategories.find(
         (category) => category.id === question.category_id
       );
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        setTimeout(() => {
+          setIsPlaying(true);  
+        }, 200);
+      }
+      
 
       setQuestions(newQuestions);
       setCategory(newCategory);
       setCurrentQuestion(question);
+      
 
       dispatch(calculateScore());
     },
@@ -513,8 +527,62 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
       examState.categoriesResults,
     ]
   );
+  
+  const togglePlayPause = () => {
+    if (!examState.trainingMode) return;
+    if (examState.paused) return;
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (examState.paused){
+        audio.pause();
+        setIsPlaying(false);
+      } else {
+        if (isPlaying){
+          audio.play();
+        }
+      }
+
+      audio.addEventListener('timeupdate', updateProgress);
+      return () => {
+        audio.removeEventListener('timeupdate', updateProgress);
+      };
+    }
+  }, [isPlaying, currentQuestion, examState.paused]);
+
+  const updateProgress = () => {
+    if (audioRef.current) {
+      const currentTime = audioRef.current.currentTime;
+      const duration = audioRef.current.duration;
+      const progress = (currentTime / duration) * 100;
+      setAudioProgress(progress);
+      if (progress === 100){
+        setIsPlaying(false);
+        setTimeout(() => {
+          setAudioProgress(0);
+        }, 200);
+      }
+    }
+  }
 
   if (!exam) return null;
+  var audio_file_path = null;
+  if (currentQuestion && currentQuestion.body){
+    if (currentQuestion.body.includes('audio-type-question-url=')){
+      audio_file_path = currentQuestion.body.replace("audio-type-question-url=", "");
+    }
+  }
+  
   return (
     <main className="relative flex flex-1 flex-col bg-white">
       <Navbar
@@ -557,11 +625,20 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
         <div className="mt-6 flex w-[90%] flex-col items-center justify-center whitespace-pre-wrap md:mt-0 md:w-4/5">
           {customContent}
         </div>
+        {audio_file_path !== null && audio_file_path !== "" ?(
+          <div
+            className={"examination-content text-center text-lg text-theme-dark-gray md:text-small-title [&>img]:mb-16 [&>img]:max-h-[50vh]"}
+          >
+            <audio ref={audioRef} src={audio_file_path} />
+            <ProgressCircle isPlaying={isPlaying} clickable={examState.trainingMode && !examState.paused} percentage={audioProgress} toggleClick={() => togglePlayPause()} />
+          </div>
+        ) :(
         <div
           className={"examination-content text-center text-lg text-theme-dark-gray md:text-small-title [&>img]:mb-16 [&>img]:max-h-[50vh]" 
             + ((exam?.add_styling_to_images || (exam.template_type === 'side-by-side-medium' && currentQuestion?.add_styling_to_images))? " image-exam-content": "")}
           dangerouslySetInnerHTML={{ __html: currentQuestion?.body || "" }}
         ></div>
+        )}
         <div
           className={c(
             "flex gap-[2vh] px-4",
