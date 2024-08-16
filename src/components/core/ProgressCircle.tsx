@@ -42,7 +42,7 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({isPlaying, clickable, pe
         <img
           alt="speaker icon"
           src={p(isPlaying? "images/speaker-playing.svg" : "images/speaker-not-playing.svg")}
-          className={"w-8 " + (clickable?"cursor-pointer":"")}
+          className={"w-16 " + (clickable?"cursor-pointer":"")}
           onClick={() => toggleClick()}
         />
       </div>
