@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { c, p } from '../../lib';
 import { Question, TemplateType } from '../../types';
 import { ImageModal } from '../common';
+import {useSelector} from '../../hooks';
 
 interface ExplanationTabProps extends React.HTMLAttributes<HTMLDivElement> {
+  isOpen: boolean,
   templateType: TemplateType;
   add_styling_to_images:boolean;
   question: Question;
@@ -11,6 +13,7 @@ interface ExplanationTabProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ExplanationTab: React.FC<ExplanationTabProps> = ({
+  isOpen,
   templateType,
   add_styling_to_images,
   question,
@@ -22,6 +25,10 @@ const ExplanationTab: React.FC<ExplanationTabProps> = ({
   const [showImageModal, setShowImageModal] = useState(false);
 
   const [image, setImage] = useState<string | undefined>();
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const examState = useSelector((state) => state.exam);
 
   const answerBody = useMemo(() => {
     switch (templateType) {
@@ -50,6 +57,67 @@ const ExplanationTab: React.FC<ExplanationTabProps> = ({
     }
   }, [question.answers, templateType, rightAnswer]);
 
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (examState.paused || !isOpen){
+        audio.pause();
+        audio.currentTime = 0; 
+        setIsPlaying(false);
+      } else {
+        if (isPlaying){
+          audio.play();
+        }
+      }
+
+      audio.addEventListener('timeupdate', updateProgress);
+      return () => {
+        audio.removeEventListener('timeupdate', updateProgress);
+      };
+    }
+    
+  }, [isPlaying, question, examState.paused, isOpen]);
+
+  const updateProgress = () => {
+    if (audioRef.current) {
+      const currentTime = audioRef.current.currentTime;
+      const duration = audioRef.current.duration;
+      const progress = (currentTime / duration) * 100;
+      if (progress === 100){
+        setIsPlaying(false);
+      }
+    }
+  }
+
+  var audio_file_path = null;
+  if (question && question.body){
+    if (question.body.includes('audio-type-question-url=')){
+      audio_file_path = question.body.replace("audio-type-question-url=", "");
+    }
+  }
+
+  const closeTabDrawer = () => {
+    if (audioRef.current){
+      if (isPlaying){
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0; 
+        setIsPlaying(false);
+      }
+    }
+    closeExplanationTab();
+  }
+
   return (
     <>
       <div
@@ -59,7 +127,7 @@ const ExplanationTab: React.FC<ExplanationTabProps> = ({
           rest.className
         )}
       >
-        <button className="ml-auto" onClick={closeExplanationTab}>
+        <button className="ml-auto" onClick={closeTabDrawer}>
           <img
             alt="exit icon"
             src={p('images/icon_close.svg')}
@@ -70,10 +138,30 @@ const ExplanationTab: React.FC<ExplanationTabProps> = ({
           <p className="mb-[2vh] text-[15px] font-medium text-theme-light-gray">
             Question
           </p>
-          <div
-            className={"question-text text-small-title [&>img]:max-h-64" + (add_styling_to_images?" image-exam-content":"")}
-            dangerouslySetInnerHTML={{ __html: question?.body || '' }}
-          ></div>
+
+          {audio_file_path !== null && audio_file_path !== "" ?(
+            <div
+              className={"examination-content text-center text-lg text-theme-dark-gray md:text-small-title [&>img]:mb-16 [&>img]:max-h-[50vh]"}
+            >
+              <audio ref={audioRef} src={audio_file_path} />
+              <div className="audio-explanation">
+                <label onClick={() => togglePlayPause()}>{isPlaying?"Audio Playing":"Play Audio"}</label>
+                <img
+                  alt="speaker icon"
+                  src={p(isPlaying? "images/speaker-playing.svg" : "images/speaker-not-playing.svg")}
+                  className={"w-16 cursor-pointer"}
+                  onClick={() => togglePlayPause()}
+                />
+              </div>
+            </div>
+          ):(
+            <div
+              className={"question-text text-small-title [&>img]:max-h-64" + (add_styling_to_images?" image-exam-content":"")}
+              dangerouslySetInnerHTML={{ __html: question?.body || '' }}
+            ></div>
+            
+          )}
+          
         </div>
         <div className="mb-[5vh]">
           <p className="mb-[2vh] text-[15px] font-medium text-theme-light-gray">

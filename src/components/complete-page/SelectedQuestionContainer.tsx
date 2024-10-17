@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useExam, useFlaggedQuestions } from '../../hooks';
 import { c, getInformationIcon, p } from '../../lib';
 import { Category, Question } from '../../types';
@@ -23,6 +23,45 @@ const SelectedQuestionContainer: React.FC<SelectedQuestionContainerProps> = ({
   const { flaggedQuestionsIds, mutateFlaggedQuestions } = useFlaggedQuestions();
 
   const [showImageModal, setShowImageModal] = useState(false);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0; 
+      setIsPlaying(false);
+
+      audio.addEventListener('timeupdate', updateProgress);
+      return () => {
+        audio.removeEventListener('timeupdate', updateProgress);
+      };
+    }
+  }, [selectedQuestion]);
+
+  const updateProgress = () => {
+    if (audioRef.current) {
+      const currentTime = audioRef.current.currentTime;
+      const duration = audioRef.current.duration;
+      const progress = (currentTime / duration) * 100;
+      if (progress === 100){
+        setIsPlaying(false);
+      }
+    }
+  }
 
   const allCategories = useMemo(() => {
     if (!exam) return [];
@@ -70,6 +109,13 @@ const SelectedQuestionContainer: React.FC<SelectedQuestionContainerProps> = ({
               const flagged = flaggedQuestionsIds?.includes(
                 selectedQuestion.id
               );
+
+               var audio_file_path = null;
+              if (selectedQuestion && selectedQuestion.body){
+                if (selectedQuestion.body.includes('audio-type-question-url=')){
+                  audio_file_path = selectedQuestion.body.replace("audio-type-question-url=", "");
+                }
+              }
 
               return (
                 <div className="h-max flex w-full flex-col">
@@ -120,12 +166,28 @@ const SelectedQuestionContainer: React.FC<SelectedQuestionContainerProps> = ({
                     )}
                   </div>
                   <div className="flex flex-1 flex-col px-4 md:px-0">
-                    <div
-                      className={"question-text mt-6 text-2xl font-semibold text-theme-extra-dark-gray md:mt-4 xl:mt-8 xl:text-4xl [&>img]:max-h-[25vh]" + (exam?.add_styling_to_images? " image-exam-content": "")}
-                      dangerouslySetInnerHTML={{
-                        __html: selectedQuestion.body || '',
-                      }}
-                    ></div>
+                  {audio_file_path !== null && audio_file_path !== "" ?(
+                    <>
+                    <audio ref={audioRef} src={audio_file_path} />
+                    <div className="audio-explanation" style={{marginTop:'10px', marginLeft:0}}>
+                      <label onClick={() => togglePlayPause()}>{isPlaying?"Audio Playing":"Play Audio"}</label>
+                      <img
+                        alt="speaker icon"
+                        src={p(isPlaying? "images/speaker-playing.svg" : "images/speaker-not-playing.svg")}
+                        className={"w-16 cursor-pointer"}
+                        onClick={() => togglePlayPause()}
+                      />
+                    </div>
+                    </>
+                  ):(
+                  <div
+                    className={"question-text mt-6 text-2xl font-semibold text-theme-extra-dark-gray md:mt-4 xl:mt-8 xl:text-4xl [&>img]:max-h-[25vh]" + (exam?.add_styling_to_images? " image-exam-content": "")}
+                    dangerouslySetInnerHTML={{
+                      __html: selectedQuestion.body || '',
+                    }}
+                  ></div>
+                  )}
+                    
                     <div className="mt-10 text-xl font-semibold text-theme-green xl:text-2xl">
                       {exam?.template_type === 'horizontal-images' ? (
                         // eslint-disable-next-line jsx-a11y/alt-text

@@ -828,6 +828,7 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
             onClick={(e) => e.stopPropagation()}
             question={currentQuestion}
             closeExplanationTab={() => setExplanationTabOpen(false)}
+            isOpen = {explanationTabOpen}
           />
         </div>
       )}
