@@ -1,4 +1,4 @@
-import { api } from '../clients';
+import { api } from "../clients";
 import type {
   Answer,
   Category,
@@ -8,7 +8,7 @@ import type {
   DBQuestion,
   Exam,
   Question,
-} from '../types';
+} from "../types";
 
 async function getExam(examId: string, questions?: string[]): Promise<Exam> {
   try {
@@ -25,8 +25,8 @@ async function getExam(examId: string, questions?: string[]): Promise<Exam> {
       exam_builder: parseBoolean(exam.exam_builder),
       random_answer_order: parseBoolean(exam.random_answer_order),
       hide_question_body_preview: parseBoolean(exam.hide_question_body_preview),
-      reduce_answer_option_size:parseBoolean(exam.reduce_answer_option_size),
-      add_styling_to_images:parseBoolean(exam.add_styling_to_images),
+      reduce_answer_option_size: parseBoolean(exam.reduce_answer_option_size),
+      add_styling_to_images: parseBoolean(exam.add_styling_to_images),
       flag_questions: parseBoolean(exam.flag_questions),
       question_duration: parseInt(exam.question_duration),
       question_map: parseBoolean(exam.question_map),
@@ -71,13 +71,10 @@ function parseDBCategories(categories: DBCategory[]) {
   }
 
   function parseDBAnswer(answer: DBAnswer): Answer {
-    return {
-      ...answer,
-      is_right: answer.is_right === '1',
-    };
+    return answer;
   }
 }
 
 function parseBoolean(value: string | boolean) {
-  return value === '1' || value === true;
+  return value === "1" || value === true;
 }

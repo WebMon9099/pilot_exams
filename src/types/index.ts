@@ -1,9 +1,9 @@
 export type TemplateType =
-  | 'horizontal-images'
-  | 'horizontal-letters'
-  | 'horizontal-text'
-  | 'vertical-text'
-  | 'side-by-side-medium';
+  | "horizontal-images"
+  | "horizontal-letters"
+  | "horizontal-text"
+  | "vertical-text"
+  | "side-by-side-medium";
 
 export interface DBExam {
   id: string;
@@ -18,8 +18,8 @@ export interface DBExam {
   exam_builder: string;
   random_answer_order: boolean;
   hide_question_body_preview: boolean;
-  reduce_answer_option_size:boolean;
-  add_styling_to_images:boolean;
+  reduce_answer_option_size: boolean;
+  add_styling_to_images: boolean;
   duration: string;
   question_duration: string;
   allow_user_navigation: string;
@@ -49,8 +49,8 @@ export interface Exam {
   flag_questions: boolean;
   exam_builder: boolean;
   hide_question_body_preview: boolean;
-  reduce_answer_option_size:boolean;
-  add_styling_to_images:boolean;
+  reduce_answer_option_size: boolean;
+  add_styling_to_images: boolean;
   random_answer_order: boolean;
   duration: number;
   question_duration: number;
@@ -69,7 +69,7 @@ export interface Exam {
   min_questions: number | null;
 }
 
-export type ExamCustomContentType = 'text' | 'image' | 'tabs';
+export type ExamCustomContentType = "text" | "image" | "tabs";
 
 export interface DBCategory {
   id: string;
@@ -120,7 +120,7 @@ export interface Question {
 export interface DBAnswer {
   id: string;
   body: string;
-  is_right: string;
+  is_right: boolean;
 }
 
 export interface Answer {
@@ -132,7 +132,7 @@ export interface Answer {
 export interface Information {
   id: string;
   name: string;
-  type: 'hyperlink' | 'image' | 'pdf';
+  type: "hyperlink" | "image" | "pdf";
   hyperlink: string;
 }
 
@@ -163,7 +163,7 @@ export interface Result {
   score: number;
   start_time: number;
   end_time: number;
-  mode: 'normal' | 'training';
+  mode: "normal" | "training";
 }
 
-export type Median = 'below' | 'average' | 'above';
+export type Median = "below" | "average" | "above";

@@ -166,10 +166,7 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
           return <p className="text-sm">{exam.custom_content.content}</p>;
         case "tabs":
           return (
-            <TabsContent
-              className=""
-              tabs={exam.custom_content.content}
-            />
+            <TabsContent className="" tabs={exam.custom_content.content} />
           );
       }
     }
@@ -190,15 +187,13 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
         setTimeout(() => {
-          setIsPlaying(true);  
+          setIsPlaying(true);
         }, 200);
       }
-      
 
       setQuestions(newQuestions);
       setCategory(newCategory);
       setCurrentQuestion(question);
-      
 
       dispatch(calculateScore());
     },
@@ -336,15 +331,21 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
       if (!exam) return;
 
       var exam_duration = exam.duration;
-      if (examState.mode === "customization" && examState.customization){
+      if (examState.mode === "customization" && examState.customization) {
         exam_duration = examState.customization.duration * 60;
       }
       const timeRemaining = exam_duration - examState.time;
-      
 
       if (timeRemaining <= 0) submitExam();
     },
-    [navigate, submitExam, exam, examState.time]
+    [
+      navigate,
+      submitExam,
+      exam,
+      examState.time,
+      examState.mode,
+      examState.customization,
+    ]
   );
 
   //  Generate questions:
@@ -353,7 +354,9 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
       if (!exam) return;
       const selectedQuestions = _.sampleSize(
         allQuestions,
-        exam.question_quantity
+        examState.mode === "customization" && examState.customization
+          ? examState.customization.question_quantity
+          : exam.question_quantity
       );
 
       if (
@@ -527,7 +530,7 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
       examState.categoriesResults,
     ]
   );
-  
+
   const togglePlayPause = () => {
     if (!examState.trainingMode) return;
     if (examState.paused) return;
@@ -544,18 +547,18 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
   useEffect(() => {
     const audio = audioRef.current;
     if (audio) {
-      if (examState.paused){
+      if (examState.paused) {
         audio.pause();
         setIsPlaying(false);
       } else {
-        if (isPlaying){
+        if (isPlaying) {
           audio.play();
         }
       }
 
-      audio.addEventListener('timeupdate', updateProgress);
+      audio.addEventListener("timeupdate", updateProgress);
       return () => {
-        audio.removeEventListener('timeupdate', updateProgress);
+        audio.removeEventListener("timeupdate", updateProgress);
       };
     }
   }, [isPlaying, currentQuestion, examState.paused]);
@@ -566,23 +569,26 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
       const duration = audioRef.current.duration;
       const progress = (currentTime / duration) * 100;
       setAudioProgress(progress);
-      if (progress === 100){
+      if (progress === 100) {
         setIsPlaying(false);
         setTimeout(() => {
           setAudioProgress(0);
         }, 200);
       }
     }
-  }
+  };
 
   if (!exam) return null;
   var audio_file_path = null;
-  if (currentQuestion && currentQuestion.body){
-    if (currentQuestion.body.includes('audio-type-question-url=')){
-      audio_file_path = currentQuestion.body.replace("audio-type-question-url=", "");
+  if (currentQuestion && currentQuestion.body) {
+    if (currentQuestion.body.includes("audio-type-question-url=")) {
+      audio_file_path = currentQuestion.body.replace(
+        "audio-type-question-url=",
+        ""
+      );
     }
   }
-  
+
   return (
     <main className="relative flex flex-1 flex-col bg-white">
       <Navbar
@@ -625,31 +631,55 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
         <div className="mt-6 flex w-[90%] flex-col items-center justify-center whitespace-pre-wrap md:mt-0 md:w-4/5">
           {customContent}
         </div>
-        {audio_file_path !== null && audio_file_path !== "" ?(
+        {audio_file_path !== null && audio_file_path !== "" ? (
           <div
-            className={"examination-content text-center text-lg text-theme-dark-gray md:text-small-title [&>img]:mb-16 [&>img]:max-h-[50vh]"}
+            className={
+              "examination-content text-center text-lg text-theme-dark-gray md:text-small-title [&>img]:mb-16 [&>img]:max-h-[50vh]"
+            }
           >
             <audio ref={audioRef} src={audio_file_path} />
-            <ProgressCircle isPlaying={isPlaying} clickable={examState.trainingMode && !examState.paused} percentage={audioProgress} toggleClick={() => togglePlayPause()} />
+            <ProgressCircle
+              isPlaying={isPlaying}
+              clickable={examState.trainingMode && !examState.paused}
+              percentage={audioProgress}
+              toggleClick={() => togglePlayPause()}
+            />
           </div>
-        ) :(
-        <div
-          className={"examination-content text-center text-lg text-theme-dark-gray md:text-small-title [&>img]:mb-16 [&>img]:max-h-[50vh]" 
-            + ((exam?.add_styling_to_images || (exam.template_type === 'side-by-side-medium' && currentQuestion?.add_styling_to_images))? " image-exam-content": "")}
-          dangerouslySetInnerHTML={{ __html: currentQuestion?.body || "" }}
-        ></div>
+        ) : (
+          <div
+            className={
+              "examination-content text-center text-lg text-theme-dark-gray md:text-small-title [&>img]:mb-16 [&>img]:max-h-[50vh]" +
+              (exam?.add_styling_to_images ||
+              (exam.template_type === "side-by-side-medium" &&
+                currentQuestion?.add_styling_to_images)
+                ? " image-exam-content"
+                : "")
+            }
+            dangerouslySetInnerHTML={{ __html: currentQuestion?.body || "" }}
+          ></div>
         )}
         <div
           className={c(
             "flex gap-[2vh] px-4",
-            (exam.reduce_answer_option_size || (exam.template_type === "side-by-side-medium" && currentQuestion?.reduce_answer_option_size))?"font-small-answer":"",
-            (exam.template_type === "vertical-text" || (exam.template_type === "side-by-side-medium" && currentQuestion?.template_type === "vertical-text"))
+            exam.reduce_answer_option_size ||
+              (exam.template_type === "side-by-side-medium" &&
+                currentQuestion?.reduce_answer_option_size)
+              ? "font-small-answer"
+              : "",
+            exam.template_type === "vertical-text" ||
+              (exam.template_type === "side-by-side-medium" &&
+                currentQuestion?.template_type === "vertical-text")
               ? "multi-choice-vertical w-full max-w-xl flex-col"
               : "horizontal-answer flex-row justify-between",
-            (exam.template_type === "horizontal-text" || (exam.template_type === "side-by-side-medium" && currentQuestion?.template_type === "horizontal-text")) && "w-full max-w-6xl",
-            ((exam.template_type === "horizontal-images" || exam.template_type === "horizontal-letters" || 
-            (exam.template_type === "side-by-side-medium" && (currentQuestion?.template_type === "horizontal-images" || currentQuestion?.template_type === "horizontal-letters")))
-            ) &&
+            (exam.template_type === "horizontal-text" ||
+              (exam.template_type === "side-by-side-medium" &&
+                currentQuestion?.template_type === "horizontal-text")) &&
+              "w-full max-w-6xl",
+            (exam.template_type === "horizontal-images" ||
+              exam.template_type === "horizontal-letters" ||
+              (exam.template_type === "side-by-side-medium" &&
+                (currentQuestion?.template_type === "horizontal-images" ||
+                  currentQuestion?.template_type === "horizontal-letters"))) &&
               "grid grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1"
           )}
         >
@@ -666,7 +696,11 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
                         answer.id && "!bg-theme-red !text-white")
               )}
               index={i}
-              templateType={(exam.template_type === 'side-by-side-medium' && currentQuestion)? currentQuestion?.template_type : exam.template_type}
+              templateType={
+                exam.template_type === "side-by-side-medium" && currentQuestion
+                  ? currentQuestion?.template_type
+                  : exam.template_type
+              }
               selected={
                 answer.id === questions[currentQuestion.index].selectedAnswerId
               }
@@ -823,12 +857,20 @@ const RunPage: React.FC<{ helpHyperlink: string }> = ({ helpHyperlink }) => {
               "absolute right-full h-full w-full overflow-y-auto transition scrollbar-thin scrollbar-track-transparent scrollbar-thumb-[#eeeeee] lg:max-w-2xl",
               explanationTabOpen && "translate-x-full"
             )}
-            templateType={(exam.template_type === 'side-by-side-medium' && currentQuestion)? currentQuestion?.template_type : exam.template_type}
-            add_styling_to_images={(exam.template_type === 'side-by-side-medium' && currentQuestion)? currentQuestion?.add_styling_to_images: exam.add_styling_to_images}
+            templateType={
+              exam.template_type === "side-by-side-medium" && currentQuestion
+                ? currentQuestion?.template_type
+                : exam.template_type
+            }
+            add_styling_to_images={
+              exam.template_type === "side-by-side-medium" && currentQuestion
+                ? currentQuestion?.add_styling_to_images
+                : exam.add_styling_to_images
+            }
             onClick={(e) => e.stopPropagation()}
             question={currentQuestion}
             closeExplanationTab={() => setExplanationTabOpen(false)}
-            isOpen = {explanationTabOpen}
+            isOpen={explanationTabOpen}
           />
         </div>
       )}
