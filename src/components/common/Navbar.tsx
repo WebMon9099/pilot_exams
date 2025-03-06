@@ -226,12 +226,12 @@ const Navbar: React.FC<NavbarProps> = ({
           </div>
           <div
             className={c(
-              "absolute bottom-0 left-0 right-0 top-full bg-black/40 transition-all",
+              "absolute top-[85px] left-[10px] mt-[5px] bg-white rounded-lg w-[415px] border border-gray-300 z-[9999] max-h-[calc(100vh-135px)] bottom-auto flex flex-col",
               menuOpen ? "visible opacity-100" : "invisible opacity-0"
             )}
           >
             <div
-              className="flex w-5/6 flex-col bg-[#e0e0e0] text-theme-dark-gray shadow-lg lg:w-96"
+              className="flex flex-col text-theme-dark-gray shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <NavbarMenuButton
@@ -246,26 +246,26 @@ const Navbar: React.FC<NavbarProps> = ({
               <NavbarMenuButton disabled={!trainingMode} onClick={() => dispatch(togglePaused())}>
                 Play/Pause
               </NavbarMenuButton>
-              <p className="px-6 py-4 font-extralight">Font Size:</p>
+              {/* <p className="px-6 py-4 font-extralight">Font Size:</p>
               <NavbarMenuButton className="py-3 text-xs" disabled>
                 Increase
               </NavbarMenuButton>
               <NavbarMenuButton className="py-3 text-xs" disabled>
                 Decrease
-              </NavbarMenuButton>
+              </NavbarMenuButton> */}
               <NavbarMenuButton
                 onClick={() => setShowRemaining(!showRemaining)}
               >
                 Switch Elapsed/Remaining
               </NavbarMenuButton>
-              <p className="px-6 py-4 font-extralight">Go to:</p>
-              <NavbarMenuButton className="py-3 text-xs" disabled>
-                Performance
+              
+              <NavbarMenuButton className="" disabled>
+                <span className="opacity-50">Go to</span> Performance
               </NavbarMenuButton>
-              <NavbarMenuButton className="py-3 text-xs" disabled>
-                User Guide
+              <NavbarMenuButton className="" disabled>
+                <span className="opacity-50">Go to</span> PerformanceUser Guide
               </NavbarMenuButton>
-              <NavbarMenuButton
+              <NavbarMenuButton className="hover:!text-[#606060] bg-[#dc3545] !text-white border-none p-4 rounded-bl-[7px] rounded-br-[7px] cursor-pointer w-full font-semibold font-['Inter'] text-sm"
                 onClick={() => {
                   setMenuOpen(false);
 
@@ -367,8 +367,8 @@ const NavbarMenuButton: React.FC<
     <button
       {...rest}
       className={c(
-        "group px-6 py-4 text-left",
-        rest.disabled ? "opacity-30" : "hover:bg-theme-blue hover:text-white",
+        "group p-4 text-left text-[#747474] cursor-pointer w-full font-bold font-['Open_Sans'] text-base transition duration-200 border-b border-[#eee]",
+        rest.disabled ? "opacity-30" : "hover:bg-[#E3F2FD] hover:text-[#606060]",
         rest.className
       )}
     >
